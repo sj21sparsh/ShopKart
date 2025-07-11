@@ -12,9 +12,11 @@ const Checkout = () => {
     const navigate = useNavigate();
 
     const { items, loading: cartLoading } = useSelector((state) => state.cart);
-    const { loading: orderLoading, success } = useSelector(
-        (state) => state.order
-    );
+    const {
+        loading: orderLoading,
+        success,
+        order,
+    } = useSelector((state) => state.order);
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -33,7 +35,7 @@ const Checkout = () => {
     }, [items, cartLoading, navigate]);
 
     useEffect(() => {
-        if (success) {
+        if (success && order) {
             setFormData({
                 fullName: "",
                 email: "",
@@ -46,11 +48,11 @@ const Checkout = () => {
 
             dispatch(clearCart());
 
-            navigate("/orders");
+            navigate("/orders", { state: { justOrdered: true, order } });
 
             dispatch(clearOrderStatus());
         }
-    }, [success, dispatch, navigate]);
+    }, [success, order, dispatch, navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -13,7 +13,7 @@ const ShopPage = () => {
     const category = searchParams.get("category");
     const searchTerm = searchParams.get("search")?.trim().toLowerCase() || "";
 
-    const { allProducts } = useSelector((state) => state.products);
+    const { allProducts, loading } = useSelector((state) => state.products);
 
     useEffect(() => {
         if (category) {
@@ -34,11 +34,15 @@ const ShopPage = () => {
 
     return (
         <div className="container mx-auto px-4 py-6">
-            <div className="lg:hidden text-xl font-semibold text-center text-blue-600 mb-4">
-                {category ? `${category.toUpperCase()} Section` : ""}
-            </div>
+            {category && (
+                <div className="lg:hidden text-xl font-semibold text-center text-blue-600 mb-4">
+                    {category.toUpperCase()} Section
+                </div>
+            )}
 
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+                <div className="text-center mt-10">Loading Products...</div>
+            ) : filteredProducts.length === 0 ? (
                 <p className="text-center text-gray-500 py-10 text-xl font-medium">
                     No products found.
                 </p>

@@ -1,20 +1,8 @@
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchOrders } from "../features/order/orderThunk";
 import OrderItems from "../components/OrderItems";
 
-const Orders = () => {
-    const dispatch = useDispatch();
-    const { orders, loading } = useSelector((state) => state.order);
-
-    useEffect(() => {
-        dispatch(fetchOrders());
-    }, [dispatch]);
-
-    if (loading)
-        return <div className="text-center mt-10">Loading orders...</div>;
-
-    if (orders.length === 0)
+const Orders = ({ orders }) => {
+    if (!orders || orders.length === 0)
         return (
             <div className="text-center mt-10 text-gray-500">
                 You have not placed any orders yet. Go Shopping...
@@ -64,6 +52,22 @@ const Orders = () => {
                                         Total Price :
                                     </span>{" "}
                                     ₹{order.totalPrice}
+                                </p>
+                                <p>
+                                    <span className="font-bold">Status :</span>{" "}
+                                    <span
+                                        className={`font-semibold p-1 border rounded-md ${
+                                            order.status === "Processing"
+                                                ? "bg-yellow-500 text-white"
+                                                : order.status === "Delivered"
+                                                ? "bg-green-500 text-white"
+                                                : order.status === "Cancelled"
+                                                ? "bg-red-500 text-white"
+                                                : "bg-gray-400 text-white"
+                                        }`}
+                                    >
+                                        {order.status}
+                                    </span>
                                 </p>
                                 <div className="mt-4">
                                     <h4 className="font-bold text-gray-900 mb-1">

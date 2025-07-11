@@ -10,6 +10,7 @@ import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import AboutPage from "./pages/aboutPage";
 import ContactPage from "./pages/contactPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { getCart } from "./features/cart/cartThunk";
@@ -35,6 +36,7 @@ function App() {
                     <Route path="about" element={<AboutPage />} />
                     <Route path="contact" element={<ContactPage />} />
                 </Route>
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </BrowserRouter>
     );
