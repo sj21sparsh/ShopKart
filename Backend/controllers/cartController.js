@@ -1,10 +1,6 @@
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
 
-const calculateTotalPrice = (items) => {
-    return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-};
-
 const validateUserOrGuest = (userId, guestId, res) => {
     if (!userId && !guestId) {
         res.status(400).json({ message: "UserId or GuestId is required" });
@@ -26,10 +22,12 @@ exports.getCart = async (req, res) => {
             return res.status(200).json({ cart: { items: [], totalPrice: 0 } });
         }
 
-        const totalPrice = calculateTotalPrice(cart.items);
-        res.status(200).json({ cart: { items: cart.items, totalPrice } });
+        res.status(200).json({
+            cart: { items: cart.items, totalPrice: cart.totalPrice },
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("GET CART ERROR:", err);
+        res.status(500).json({ message: "Something went wrong" });
     }
 };
 
@@ -39,6 +37,10 @@ exports.addToCart = async (req, res) => {
 
     try {
         if (!validateUserOrGuest(userId, guestId, res)) return;
+        if (!quantity || quantity <= 0)
+            return res
+                .status(400)
+                .json({ message: "Quantity must be greater than 0" });
 
         const product = await Product.findById(productId);
         if (!product)
@@ -71,7 +73,8 @@ exports.addToCart = async (req, res) => {
             cart: { items: cart.items, totalPrice: cart.totalPrice },
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("ADD TO CART ERROR:", err);
+        res.status(500).json({ message: "Something went wrong" });
     }
 };
 
@@ -81,6 +84,10 @@ exports.updateItem = async (req, res) => {
 
     try {
         if (!validateUserOrGuest(userId, guestId, res)) return;
+        if (quantity < 0)
+            return res
+                .status(400)
+                .json({ message: "Quantity cannot be negative" });
 
         const cart = await Cart.findOne(userId ? { userId } : { guestId });
         if (!cart)
@@ -102,7 +109,8 @@ exports.updateItem = async (req, res) => {
             cart: { items: cart.items, totalPrice: cart.totalPrice },
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("UPDATE ITEM ERROR:", err);
+        res.status(500).json({ message: "Something went wrong" });
     }
 };
 
@@ -133,7 +141,8 @@ exports.removeItem = async (req, res) => {
             cart: { items: cart.items, totalPrice: cart.totalPrice },
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("REMOVE ITEM ERROR:", err);
+        res.status(500).json({ message: "Something went wrong" });
     }
 };
 
@@ -154,6 +163,7 @@ exports.clearCart = async (req, res) => {
             cart: { items: [], totalPrice: cart.totalPrice },
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("CLEAR CART ERROR:", err);
+        res.status(500).json({ message: "Something went wrong" });
     }
 };

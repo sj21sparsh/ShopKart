@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import ProductsGrid from "../components/ProductsGrid";
@@ -6,6 +6,9 @@ import {
     getAllProducts,
     getProductsByCategory,
 } from "../features/product/productThunk";
+import { setLastFetchedCategory } from "../features/product/productSlice";
+import Loader from "../common/Loader";
+import ErrorMessage from "../common/ErrorMessage";
 
 const ShopPage = () => {
     const dispatch = useDispatch();
@@ -13,17 +16,36 @@ const ShopPage = () => {
     const category = searchParams.get("category");
     const searchTerm = searchParams.get("search")?.trim().toLowerCase() || "";
 
-    const { allProducts, loading } = useSelector((state) => state.products);
+    const { allProducts, categoryProducts, lastFetchedCategory } = useSelector(
+        (state) => state.products
+    );
+
+    const [localLoading, setLocalLoading] = useState(false);
+    const [localError, setLocalError] = useState(null);
 
     useEffect(() => {
-        if (category) {
-            dispatch(getProductsByCategory(category));
-        } else {
-            dispatch(getAllProducts());
-        }
-    }, [dispatch, category]);
+        const fetchProducts = async () => {
+            try {
+                setLocalLoading(true);
+                setLocalError(null);
 
-    const filteredProducts = allProducts.filter(
+                if (category && lastFetchedCategory !== category) {
+                    await dispatch(getProductsByCategory(category)).unwrap();
+                    dispatch(setLastFetchedCategory(category));
+                } else if (!category && allProducts.length === 0) {
+                    await dispatch(getAllProducts()).unwrap();
+                }
+            } catch (err) {
+                setLocalError(err);
+            } finally {
+                setLocalLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, [dispatch, category, lastFetchedCategory]);
+
+    const filteredProducts = (category ? categoryProducts : allProducts).filter(
         (product) =>
             product.name?.toLowerCase().includes(searchTerm) ||
             product.description?.toLowerCase().includes(searchTerm) ||
@@ -40,8 +62,12 @@ const ShopPage = () => {
                 </div>
             )}
 
-            {loading ? (
-                <div className="text-center mt-10">Loading Products...</div>
+            {localLoading ? (
+                <div className="flex justify-center items-center py-16">
+                    <Loader size="40" className="text-blue-600" />
+                </div>
+            ) : localError ? (
+                <ErrorMessage message={localError} />
             ) : filteredProducts.length === 0 ? (
                 <p className="text-center text-gray-500 py-10 text-xl font-medium">
                     No products found.

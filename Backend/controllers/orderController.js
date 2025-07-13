@@ -47,10 +47,7 @@ exports.placeOrder = async (req, res) => {
 
         res.status(200).json({ message: "Order placed successfully", order });
     } catch (err) {
-        res.status(500).json({
-            message: "Failed to place order",
-            error: err.message,
-        });
+        res.status(500).json({ message: "Failed to place order" });
     }
 };
 
@@ -67,6 +64,6 @@ exports.getOrders = async (req, res) => {
         );
         res.status(200).json({ orders });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: "Something wen wrong" });
     }
 };

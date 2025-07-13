@@ -2,10 +2,12 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrders } from "../features/order/orderThunk";
 import Orders from "./Orders";
+import Loader from "../common/Loader";
+import ErrorMessage from "../common/ErrorMessage";
 
 const Profile = () => {
     const dispatch = useDispatch();
-    const { orders, loading } = useSelector((state) => state.order);
+    const { orders, loading, error } = useSelector((state) => state.order);
 
     useEffect(() => {
         dispatch(fetchOrders());
@@ -26,11 +28,16 @@ const Profile = () => {
                     {localStorage.getItem("guestId")}
                 </p>
                 {loading ? (
-                    <div className="text-center mt-10">Loading orders...</div>
-                ) : orders.length === 0 ? (
-                    <div className="text-center mt-10 text-gray-500">
-                        You have not placed any orders yet. Go Shopping...
-                    </div>
+                    <>
+                        <div className="text-center mt-10">
+                            Loading orders...
+                        </div>
+                        <div className="flex justify-center items-center py-16">
+                            <Loader size="40" className="text-blue-600" />
+                        </div>
+                    </>
+                ) : error ? (
+                    <ErrorMessage message={error} />
                 ) : (
                     <Orders orders={orders} />
                 )}

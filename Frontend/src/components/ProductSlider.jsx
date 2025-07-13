@@ -1,9 +1,57 @@
-import React, { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    getLatestProducts,
+    getFeaturedProducts,
+    getRelatedProducts,
+} from "../features/product/productThunk";
+import { setLastFetchedRelatedId } from "../features/product/productSlice";
+import Loader from "../common/Loader";
+import ErrorMessage from "../common/ErrorMessage";
 import ProductCard from "./ProductCard";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 
-const ProductSlider = ({ title = "Collection", products = [] }) => {
+const ProductSlider = ({
+    title = "Collection",
+    type = "latest",
+    productId = null,
+}) => {
     const scrollRef = useRef(null);
+    const dispatch = useDispatch();
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const { latest, featured, related, lastFetchedRelatedId } = useSelector(
+        (state) => state.products
+    );
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                if (type === "latest" && latest.length === 0) {
+                    await dispatch(getLatestProducts()).unwrap();
+                } else if (type === "featured" && featured.length === 0) {
+                    await dispatch(getFeaturedProducts()).unwrap();
+                } else if (
+                    type === "related" &&
+                    productId &&
+                    lastFetchedRelatedId !== productId
+                ) {
+                    await dispatch(getRelatedProducts(productId)).unwrap();
+                    dispatch(setLastFetchedRelatedId(productId));
+                }
+            } catch (err) {
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, [dispatch, type, productId, lastFetchedRelatedId]);
 
     const scrollLeft = () => {
         scrollRef.current.scrollBy({ left: -300 });
@@ -12,6 +60,23 @@ const ProductSlider = ({ title = "Collection", products = [] }) => {
     const scrollRight = () => {
         scrollRef.current.scrollBy({ left: 300 });
     };
+
+    let products = [];
+    if (type === "latest") products = latest;
+    else if (type === "featured") products = featured;
+    else if (type === "related") products = related;
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center py-16">
+                <Loader size="40" className="text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return <ErrorMessage message={error} />;
+    }
 
     return (
         products.length > 0 && (

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import AddressForm from "./AddressForm";
 import OrderSummary from "./OrderSummary";
 import { placeOrder } from "../features/order/orderThunk";
@@ -14,6 +15,7 @@ const Checkout = () => {
     const { items, loading: cartLoading } = useSelector((state) => state.cart);
     const {
         loading: orderLoading,
+        error: orderError,
         success,
         order,
     } = useSelector((state) => state.order);
@@ -27,6 +29,18 @@ const Checkout = () => {
         pinCode: "",
         phone: "",
     });
+
+    useEffect(() => {
+        return () => {
+            dispatch(clearOrderStatus());
+        };
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (orderError) {
+            toast.error(orderError);
+        }
+    }, [orderError]);
 
     useEffect(() => {
         if (!cartLoading && items.length === 0) {
@@ -60,6 +74,7 @@ const Checkout = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (orderLoading) return;
         if (!checkFormValidations()) return;
 
         const orderData = {
@@ -83,7 +98,7 @@ const Checkout = () => {
             !pinCode ||
             !phone
         ) {
-            alert("Please fill all the fields.");
+            toast.error("Please fill all the fields.");
             return false;
         }
 
@@ -92,15 +107,15 @@ const Checkout = () => {
         const phoneRegex = /^\d{10}$/;
 
         if (!emailRegex.test(email)) {
-            alert("Please enter a valid email.");
+            toast.error("Please enter a valid email.");
             return false;
         }
         if (!pinRegex.test(pinCode)) {
-            alert("Pin code should be 6 digits.");
+            toast.error("Pin code should be 6 digits.");
             return false;
         }
         if (!phoneRegex.test(phone)) {
-            alert("Phone number should be 10 digits.");
+            toast.error("Phone number should be 10 digits.");
             return false;
         }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import NavLinks from "./NavLinks";
 import MobileMenu from "./MobileMenu";
@@ -13,7 +13,6 @@ import {
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const location = useLocation();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [showMobileSearch, setShowMobileSearch] = useState(false);

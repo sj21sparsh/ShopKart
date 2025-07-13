@@ -18,6 +18,9 @@ const orderSlice = createSlice({
             state.success = false;
             state.error = null;
         },
+        resetOrders: (state) => {
+            state.orders = [];
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -30,6 +33,7 @@ const orderSlice = createSlice({
                 state.loading = false;
                 state.order = action.payload.order;
                 state.success = true;
+                state.error = null;
             })
             .addCase(placeOrder.rejected, (state, action) => {
                 state.loading = false;
@@ -40,17 +44,21 @@ const orderSlice = createSlice({
             .addCase(fetchOrders.pending, (state) => {
                 state.loading = true;
                 state.error = null;
+                state.success = false;
             })
             .addCase(fetchOrders.fulfilled, (state, action) => {
                 state.loading = false;
                 state.orders = action.payload;
+                state.success = true;
+                state.error = null;
             })
             .addCase(fetchOrders.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+                state.success = false;
             });
     },
 });
 
-export const { clearOrderStatus } = orderSlice.actions;
+export const { clearOrderStatus, resetOrders } = orderSlice.actions;
 export default orderSlice.reducer;
